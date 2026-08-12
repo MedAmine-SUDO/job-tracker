@@ -3,6 +3,31 @@ import { container } from "@/lib/infrastructure/container";
 import { ApplicationUseCases } from "@/lib/core/usecases/application-usecases";
 
 /**
+ * GET /api/applications/:id
+ */
+export async function GET(_: Request, { params }: { params: { id: string } }) {
+  try {
+    const auth = await container.getAuth();
+    const userId = await auth.requireAuth();
+
+    const repo = await container.getRepository();
+    const useCases = new ApplicationUseCases(repo);
+
+    const app = await useCases.getApplication(params.id, userId);
+    if (!app) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    return NextResponse.json(app);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    console.error("GET /api/applications/:id error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+/**
  * PATCH /api/applications/:id
  */
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {

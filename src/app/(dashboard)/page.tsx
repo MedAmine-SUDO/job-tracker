@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react;
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { ApplicationList } from "@/components/applications/application-list";
 import { ApplicationBoard } from "@/components/applications/application-board";
 import { SearchBar } from "@/components/layout/search-bar";
@@ -31,6 +32,13 @@ export default function DashboardPage() {
           <h1 className="text-lg font-semibold tracking-tight">Job Tracker</h1>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
+            <SignedOut>
+              <SignInButton mode="modal" />
+              <SignUpButton mode="modal" />
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/sign-in" />
+            </SignedIn>
             <Button
               variant="ghost"
               size="icon"

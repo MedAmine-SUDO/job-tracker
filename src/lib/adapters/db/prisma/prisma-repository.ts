@@ -69,8 +69,11 @@ export class PrismaApplicationRepository implements IApplicationRepository {
   }
 
   async update(id: string, userId: string, input: UpdateApplicationInput): Promise<Application> {
+    const existing = await prisma.application.findFirst({ where: { id, userId } });
+    if (!existing) throw new Error("Application not found");
+
     const app = await prisma.application.update({
-      where: { id, userId },
+      where: { id },
       data: {
         ...(input.companyName !== undefined && { companyName: input.companyName }),
         ...(input.positionTitle !== undefined && { positionTitle: input.positionTitle }),
@@ -93,7 +96,9 @@ export class PrismaApplicationRepository implements IApplicationRepository {
   }
 
   async delete(id: string, userId: string): Promise<void> {
-    await prisma.application.delete({ where: { id, userId } });
+    const existing = await prisma.application.findFirst({ where: { id, userId } });
+    if (!existing) throw new Error("Application not found");
+    await prisma.application.delete({ where: { id } });
   }
 
   async search(userId: string, query: string): Promise<Application[]> {

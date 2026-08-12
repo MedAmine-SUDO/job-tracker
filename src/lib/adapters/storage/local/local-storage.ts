@@ -10,7 +10,7 @@ import { IStorageProvider } from "@/lib/core/ports/storage";
  */
 export class LocalStorageProvider implements IStorageProvider {
   async upload(file: File | Buffer, path: string): Promise<{ url: string; size: number }> {
-    if (file instanceof Buffer) {
+    if (Buffer.isBuffer(file)) {
       // Server-side: store in temp or return base64
       const base64 = file.toString("base64");
       const mimeType = "application/octet-stream";

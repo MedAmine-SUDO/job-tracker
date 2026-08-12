@@ -3,15 +3,15 @@ import type { NextRequest } from "next/server";
 
 /**
  * Middleware
- * 
+ *
  * If AUTH_ADAPTER=clerk: Uses Clerk middleware (requires Clerk env vars)
  * If AUTH_ADAPTER=local: Skips auth checks, allows all routes
- * 
+ *
  * This makes the app work out of the box without Clerk keys.
  */
 const PUBLIC_PATHS = ["/sign-in", "/sign-up", "/api/webhook"];
 
-export async function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const authAdapter = process.env.AUTH_ADAPTER || "clerk";
 
   // Local auth: no middleware checks needed
@@ -19,11 +19,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Clerk auth: delegate to Clerk (loaded dynamically to avoid errors if not installed)
+  // Clerk auth: protect all routes except public paths
   if (authAdapter === "clerk") {
     try {
-      const { clerkMiddleware } = await import("@clerk/nextjs/server");
-      return clerkMiddleware()(request, {} as any);
+      const { clerkMiddleware, createRouteMatcher } = await import(
+        "@clerk/nextjs/server"
+      );
+      const isPublicRoute = createRouteMatcher(
+        PUBLIC_PATHS.map((path) => `${path}(.*)`)
+      );
+      const handler = clerkMiddleware((auth, req) => {
+        if (!isPublicRoute(req)) auth().protect();
+      });
+      return handler(request, {} as any);
     } catch {
       // Clerk not configured, fall through to local mode
       return NextResponse.next();
@@ -34,5 +42,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!.*\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    "/((?!.*\..*|_next).*)",
+    "/",
+    "/(api|trpc)(.*)",
+    "/__clerk/:path*",
+  ],
 };
