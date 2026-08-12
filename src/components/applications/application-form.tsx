@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ApplicationStatus, WorkType, AttachmentCategory, STATUS_LABELS, CATEGORY_LABELS } from "@/lib/core/domain/application";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Building2, Briefcase, MapPin, Link as LinkIcon, FileText, Tags, StickyNote, Share2, Paperclip, Loader2 } from "lucide-react";
+import { Building2, Briefcase, MapPin, Link as LinkIcon, FileText, Tags, StickyNote, Share2, Paperclip, Loader2, CheckCircle2 } from "lucide-react";
 
 async function createApplication(data: any) {
   const res = await fetch("/api/applications", {
@@ -85,14 +85,31 @@ export function ApplicationForm() {
     tags: "",
     notes: "",
   });
-  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentFiles, setAttachmentFiles] = useState<Partial<Record<AttachmentCategory, File>>>(
+    {}
+  );
   const [attachmentCategory, setAttachmentCategory] = useState<AttachmentCategory>("resume");
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
+
+  const selectedAttachment = attachmentFiles[attachmentCategory] ?? null;
+
+  const handleAttachmentCategoryChange = (value: AttachmentCategory) => {
+    setAttachmentCategory(value);
+    if (attachmentInputRef.current) attachmentInputRef.current.value = "";
+  };
+
+  const handleAttachmentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setAttachmentFiles((prev) => ({ ...prev, [attachmentCategory]: file ?? undefined }));
+  };
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
       const app = await createApplication(data);
-      if (attachmentFile) {
-        await uploadAttachment(app.id, attachmentFile, attachmentCategory);
+      for (const [category, file] of Object.entries(attachmentFiles)) {
+        if (file) {
+          await uploadAttachment(app.id, file, category as AttachmentCategory);
+        }
       }
       return app;
     },
@@ -264,7 +281,7 @@ export function ApplicationForm() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <select
               value={attachmentCategory}
-              onChange={(e) => setAttachmentCategory(e.target.value as AttachmentCategory)}
+              onChange={(e) => handleAttachmentCategoryChange(e.target.value as AttachmentCategory)}
               className="h-10 shrink-0 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
@@ -272,16 +289,22 @@ export function ApplicationForm() {
               ))}
             </select>
             <input
+              ref={attachmentInputRef}
               type="file"
               className="h-10 flex-1 cursor-pointer rounded-lg border border-input bg-background px-2 text-sm text-muted-foreground file:mr-3 file:h-full file:cursor-pointer file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:text-sm file:font-medium file:text-secondary-foreground hover:file:bg-secondary/80"
-              onChange={(e) => setAttachmentFile(e.target.files?.[0] ?? null)}
+              onChange={handleAttachmentFileChange}
               accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
             />
           </div>
-          {attachmentFile && (
-            <p className="text-xs text-muted-foreground">
-              {attachmentFile.name} • {(attachmentFile.size / 1024).toFixed(1)} KB — will be
-              attached to this application.
+          {selectedAttachment ? (
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+              {CATEGORY_LABELS[attachmentCategory]} selected: {selectedAttachment.name} •{" "}
+              {(selectedAttachment.size / 1024).toFixed(1)} KB
+            </p>
+          ) : (
+            <p className="mt-2 text-xs text-muted-foreground">
+              No file selected for {CATEGORY_LABELS[attachmentCategory].toLowerCase()}.
             </p>
           )}
         </Field>

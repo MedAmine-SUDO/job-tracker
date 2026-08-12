@@ -15,6 +15,7 @@ import {
   Loader2,
   Trash2,
   Download,
+  CheckCircle2,
 } from "lucide-react";
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as AttachmentCategory[];
@@ -49,6 +50,12 @@ export function AttachmentsSection({
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["application", applicationId] });
+  };
+
+  const handleCategoryChange = (value: AttachmentCategory) => {
+    setCategory(value);
+    setFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleUpload = async () => {
@@ -95,6 +102,8 @@ export function AttachmentsSection({
     }
   };
 
+  const existingForCategory = attachments?.find((a) => a.category === category);
+
   return (
     <section className="rounded-xl border bg-card p-6">
       <h2 className="mb-4 flex items-center gap-2 font-semibold">
@@ -111,7 +120,7 @@ export function AttachmentsSection({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value as AttachmentCategory)}
+            onChange={(e) => handleCategoryChange(e.target.value as AttachmentCategory)}
             className="h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             {CATEGORIES.map((c) => (
@@ -138,11 +147,16 @@ export function AttachmentsSection({
             Upload
           </Button>
         </div>
-        {file && (
+        {file ? (
           <p className="mt-2 text-xs text-muted-foreground">
             {file.name} • {formatFileSize(file.size)}
           </p>
-        )}
+        ) : existingForCategory ? (
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+            {CATEGORY_LABELS[category]} already uploaded: {existingForCategory.fileName}
+          </p>
+        ) : null}
         {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
       </div>
 
