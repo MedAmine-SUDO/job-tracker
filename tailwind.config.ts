@@ -3,9 +3,9 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   darkMode: ["class"],
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -42,18 +42,6 @@ const config: Config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
-        },
-        status: {
-          wishlist: "#9ca3af",
-          applied: "#3b82f6",
-          phone_screen: "#eab308",
-          technical: "#f97316",
-          onsite: "#a855f7",
-          offer: "#22c55e",
-          accepted: "#15803d",
-          rejected: "#ef4444",
-          ghosted: "#6b7280",
-          withdrawn: "#d1d5db",
         },
       },
       borderRadius: {

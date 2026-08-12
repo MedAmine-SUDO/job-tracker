@@ -1,32 +1,56 @@
 # Job Tracker
 
-A blazing-fast job application tracker built with Next.js 14, Tailwind CSS, and Prisma. Track your applications, interviews, contacts, and offers in one place. Works offline and syncs when connected.
+A blazing-fast, tech-agnostic job application tracker built with **Clean Architecture** (Ports & Adapters). Swap any technology — database, auth, storage — without touching your business logic or UI.
 
-## Features
+## Architecture
 
-- **Application Pipeline**: Track from Wishlist → Applied → Interview → Offer
-- **Document Management**: Upload resumes, cover letters, job descriptions
-- **Contact Tracking**: Save recruiter/hiring manager details with LinkedIn links
-- **Interview Log**: Record questions, notes, and ratings for each round
-- **Smart Search**: Fuzzy search across companies, positions, and notes
-- **Kanban Board**: Visual pipeline view
-- **Dark Mode**: System-aware with manual toggle
-- **Mobile-First**: Optimized for phone use, PWA-ready
-- **Offline-First**: Works without internet, syncs when connected
+```
+┌─────────────────────────────────────────────────────────────┐
+│  PRESENTATION LAYER                                          │
+│  ├─ Components (React)                                       │
+│  ├─ Pages (Next.js App Router)                               │
+│  └─ API Routes (Next.js)                                    │
+├─────────────────────────────────────────────────────────────┤
+│  APPLICATION LAYER                                         │
+│  ├─ Use Cases (business logic)                               │
+│  └─ Domain Models (pure TypeScript)                        │
+├─────────────────────────────────────────────────────────────┤
+│  PORTS (Interfaces)                                        │
+│  ├─ IApplicationRepository                                  │
+│  ├─ IAuthProvider                                           │
+│  └─ IStorageProvider                                        │
+├─────────────────────────────────────────────────────────────┤
+│  ADAPTERS (Implementations)                                │
+│  ├─ DB: Prisma (Neon/Supabase/Postgres) or Dexie (IndexedDB)│
+│  ├─ Auth: Clerk or Local (no external service)               │
+│  └─ Storage: Local (base64), Supabase, S3                   │
+└─────────────────────────────────────────────────────────────┘
+```
 
-## Tech Stack
+## Swap Technologies in 30 Seconds
 
-- **Framework**: Next.js 14 (App Router)
-- **Styling**: Tailwind CSS + shadcn/ui
-- **Database**: PostgreSQL + Prisma
-- **Auth**: Clerk
-- **State**: Zustand + TanStack Query
-- **Search**: Fuse.js (client-side)
-- **Offline**: Dexie.js (IndexedDB)
+### Database
+| Adapter | Use Case | How |
+|---------|----------|-----|
+| `prisma` | PostgreSQL (Neon, Supabase, Railway, RDS) | `DATABASE_ADAPTER=prisma` + `DATABASE_URL=...` |
+| `dexie` | Zero-backend, offline-first, privacy | `DATABASE_ADAPTER=dexie` |
+
+### Auth
+| Adapter | Use Case | How |
+|---------|----------|-----|
+| `clerk` | Production OAuth, MFA, sessions | `AUTH_ADAPTER=clerk` + Clerk keys |
+| `local` | Dev mode, no external service | `AUTH_ADAPTER=local` |
+
+### Storage
+| Adapter | Use Case | How |
+|---------|----------|-----|
+| `local` | Base64 in DB, no external service | `STORAGE_ADAPTER=local` |
+| `supabase` | Cloud file storage | `STORAGE_ADAPTER=supabase` + Supabase keys |
 
 ## Quick Start
 
-### 1. Clone & Install
+### Option 1: Zero Setup (Dexie + Local Auth)
+No database, no auth service, no credit card. Everything stays in your browser.
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/job-tracker.git
@@ -34,66 +58,122 @@ cd job-tracker
 npm install
 ```
 
-### 2. Environment Variables
-
+Create `.env.local`:
 ```bash
-cp .env.example .env.local
+DATABASE_ADAPTER=dexie
+AUTH_ADAPTER=local
+STORAGE_ADAPTER=local
 ```
-
-Fill in:
-- `DATABASE_URL` — PostgreSQL connection string
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` — From Clerk dashboard
-- `CLERK_SECRET_KEY` — From Clerk dashboard
-
-### 3. Database Setup
-
-```bash
-npx prisma migrate dev --name init
-npx prisma generate
-```
-
-### 4. Run Dev Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Done. Open `http://localhost:3000`. Your data lives in IndexedDB.
+
+### Option 2: Full Stack (Neon + Clerk)
+
+```bash
+npm install
+cp .env.example .env.local
+```
+
+Edit `.env.local`:
+```bash
+DATABASE_ADAPTER=prisma
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/jobtracker?sslmode=require"
+
+AUTH_ADAPTER=clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+
+STORAGE_ADAPTER=local
+```
+
+```bash
+npx prisma migrate dev --name init
+npx prisma generate
+npm run dev
+```
 
 ## Project Structure
 
 ```
 job-tracker/
-├── app/                    # Next.js App Router
-│   ├── (auth)/            # Auth routes (Clerk)
-│   ├── (dashboard)/       # Main app pages
-│   └── api/               # API routes
-├── components/
-│   ├── ui/                # shadcn/ui components
-│   ├── applications/      # Application-specific components
-│   └── layout/            # Layout components
-├── lib/
-│   ├── db/                # Prisma client
-│   └── stores/            # Zustand stores
-├── types/                 # TypeScript types
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── (auth)/                   # Auth pages (sign-in, sign-up)
+│   │   ├── (dashboard)/              # Main app pages
+│   │   │   ├── page.tsx              # Dashboard (list/board views)
+│   │   │   ├── applications/
+│   │   │   │   ├── new/page.tsx      # New application form
+│   │   │   │   └── [id]/page.tsx     # Application detail
+│   │   └── api/applications/         # REST API (uses container)
+│   ├── components/
+│   │   ├── ui/                       # shadcn/ui components
+│   │   ├── applications/             # Application-specific components
+│   │   └── layout/                   # Layout components
+│   ├── lib/
+│   │   ├── core/                     # Business logic (framework-agnostic)
+│   │   │   ├── domain/               # Domain models & types
+│   │   │   ├── ports/                # Interfaces (contracts)
+│   │   │   └── usecases/             # Business logic
+│   │   ├── adapters/                 # Concrete implementations
+│   │   │   ├── db/prisma/            # PostgreSQL via Prisma
+│   │   │   ├── db/dexie/             # IndexedDB via Dexie
+│   │   │   ├── auth/clerk/           # Clerk auth
+│   │   │   ├── auth/local/           # Local auth (dev mode)
+│   │   │   └── storage/local/        # Local file storage
+│   │   └── infrastructure/           # DI container & config
+│   └── types/                        # Shared types
 ├── prisma/
-│   └── schema.prisma      # Database schema
-└── public/                # Static assets
+│   └── schema.prisma                 # Database schema
+└── public/                           # Static assets
 ```
+
+## Adding a New Adapter
+
+Want to use **Supabase** as your database? Create one file:
+
+```typescript
+// src/lib/adapters/db/supabase/supabase-repository.ts
+import { IApplicationRepository } from "@/lib/core/ports/repository";
+
+export class SupabaseApplicationRepository implements IApplicationRepository {
+  async findAll(userId: string) { /* ... */ }
+  async findById(id: string, userId: string) { /* ... */ }
+  async create(userId: string, input) { /* ... */ }
+  async update(id, userId, input) { /* ... */ }
+  async delete(id, userId) { /* ... */ }
+  async search(userId, query) { /* ... */ }
+  async findByStatus(userId, status) { /* ... */ }
+  async findByTags(userId, tags) { /* ... */ }
+}
+```
+
+Then register it in `src/lib/infrastructure/container.ts`:
+
+```typescript
+case "supabase":
+  const { SupabaseApplicationRepository } = await import("@/lib/adapters/db/supabase/supabase-repository");
+  this._repo = new SupabaseApplicationRepository();
+  break;
+```
+
+Set `DATABASE_ADAPTER=supabase` in `.env.local`. Done. Zero UI changes.
 
 ## Deployment
 
 ### Vercel (Recommended)
-
 1. Push to GitHub
-2. Import project in Vercel
-3. Add environment variables
-4. Add PostgreSQL (Vercel Postgres or Supabase)
+2. Import in Vercel
+3. Add environment variables from `.env.local`
+4. If using Prisma: add `npx prisma generate` to build command
 5. Deploy
 
 ### Self-Hosted
-
-Build and start:
 ```bash
 npm run build
 npm start
@@ -101,17 +181,22 @@ npm start
 
 ## Roadmap
 
-- [x] Core application CRUD
-- [x] Status pipeline
+- [x] Clean Architecture (Ports & Adapters)
+- [x] Prisma adapter (PostgreSQL/SQLite)
+- [x] Dexie adapter (IndexedDB, offline-first)
+- [x] Clerk auth adapter
+- [x] Local auth adapter (zero external deps)
+- [x] Application CRUD + status pipeline
 - [x] Search & filter
-- [ ] Resume upload & versioning
+- [x] List view + Kanban board
+- [x] Dark mode
 - [ ] Contact management
 - [ ] Interview tracking
 - [ ] Reminders & notifications
+- [ ] Resume upload & versioning
 - [ ] Analytics dashboard
 - [ ] PWA / Offline mode
 - [ ] Android app (TWA)
-- [ ] iOS app
 
 ## License
 

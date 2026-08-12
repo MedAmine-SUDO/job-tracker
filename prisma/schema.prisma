@@ -28,7 +28,6 @@ model Application {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  resumes            ApplicationResume[]
   contacts           Contact[]
   interviews         Interview[]
   communications     CommunicationLog[]
@@ -40,32 +39,6 @@ model Application {
   @@index([companyName])
 }
 
-model ResumeVersion {
-  id        String   @id @default(uuid())
-  userId    String
-  name      String
-  fileUrl   String
-  fileName  String
-  fileSize  Int
-  createdAt DateTime @default(now())
-
-  applications ApplicationResume[]
-
-  @@index([userId])
-}
-
-model ApplicationResume {
-  id             String   @id @default(uuid())
-  applicationId  String
-  resumeVersionId String
-  isCoverLetter  Boolean  @default(false)
-
-  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  resumeVersion ResumeVersion @relation(fields: [resumeVersionId], references: [id], onDelete: Cascade)
-
-  @@unique([applicationId, resumeVersionId])
-}
-
 model Contact {
   id            String  @id @default(uuid())
   applicationId String
@@ -75,8 +48,7 @@ model Contact {
   linkedinUrl   String?
   phone         String?
   notes         String? @db.Text
-
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   communications CommunicationLog[]
 }
 
@@ -90,11 +62,10 @@ model Interview {
   durationMinutes  Int?
   questions        String?         @db.Text
   notes            String?         @db.Text
-  rating           Int?            @db.Int
+  rating           Int?
   completed        Boolean         @default(false)
   createdAt        DateTime        @default(now())
-
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  application      Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }
 
 model CommunicationLog {
@@ -105,9 +76,8 @@ model CommunicationLog {
   direction     CommDirection
   content       String      @db.Text
   createdAt     DateTime    @default(now())
-
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  contact     Contact?    @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  contact       Contact?    @relation(fields: [contactId], references: [id], onDelete: SetNull)
 }
 
 model Reminder {
@@ -119,9 +89,7 @@ model Reminder {
   isCompleted       Boolean  @default(false)
   notificationSent  Boolean  @default(false)
   createdAt         DateTime @default(now())
-
-  application Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-
+  application       Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   @@index([userId])
   @@index([dueDate])
 }
@@ -135,8 +103,7 @@ model Attachment {
   fileSize      Int
   category      AttachmentCategory @default(other)
   uploadedAt    DateTime         @default(now())
-
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  application   Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }
 
 enum ApplicationStatus {
