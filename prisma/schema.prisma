@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id                 String    @id @default(uuid())
+  userId             String
+  companyName        String
+  positionTitle      String
+  status             ApplicationStatus @default(applied)
+  applicationDate    DateTime  @default(now())
+  jobPostingUrl      String?
+  jobDescriptionText String?   @db.Text
+  salaryRangeMin     Int?
+  salaryRangeMax     Int?
+  salaryCurrency     String    @default("USD")
+  location           String?
+  workType           WorkType  @default(unknown)
+  source             String?
+  tags               String[]
+  notes              String?   @db.Text
+  isArchived         Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  resumes            ApplicationResume[]
+  contacts           Contact[]
+  interviews         Interview[]
+  communications     CommunicationLog[]
+  reminders          Reminder[]
+  attachments        Attachment[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([companyName])
+}
+
+model ResumeVersion {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  fileUrl   String
+  fileName  String
+  fileSize  Int
+  createdAt DateTime @default(now())
+
+  applications ApplicationResume[]
+
+  @@index([userId])
+}
+
+model ApplicationResume {
+  id             String   @id @default(uuid())
+  applicationId  String
+  resumeVersionId String
+  isCoverLetter  Boolean  @default(false)
+
+  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  resumeVersion ResumeVersion @relation(fields: [resumeVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, resumeVersionId])
+}
+
+model Contact {
+  id            String  @id @default(uuid())
+  applicationId String
+  name          String
+  role          String?
+  email         String?
+  linkedinUrl   String?
+  phone         String?
+  notes         String? @db.Text
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  communications CommunicationLog[]
+}
+
+model Interview {
+  id               String          @id @default(uuid())
+  applicationId    String
+  round            String
+  scheduledDate    DateTime
+  format           InterviewFormat
+  locationOrLink   String?
+  durationMinutes  Int?
+  questions        String?         @db.Text
+  notes            String?         @db.Text
+  rating           Int?            @db.Int
+  completed        Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model CommunicationLog {
+  id            String      @id @default(uuid())
+  applicationId String
+  contactId     String?
+  type          CommType
+  direction     CommDirection
+  content       String      @db.Text
+  createdAt     DateTime    @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  contact     Contact?    @relation(fields: [contactId], references: [id], onDelete: SetNull)
+}
+
+model Reminder {
+  id                String   @id @default(uuid())
+  userId            String
+  applicationId     String?
+  title             String
+  dueDate           DateTime
+  isCompleted       Boolean  @default(false)
+  notificationSent  Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([dueDate])
+}
+
+model Attachment {
+  id            String           @id @default(uuid())
+  applicationId String
+  fileName      String
+  fileUrl       String
+  fileType      String
+  fileSize      Int
+  category      AttachmentCategory @default(other)
+  uploadedAt    DateTime         @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+enum ApplicationStatus {
+  wishlist
+  applied
+  phone_screen
+  technical
+  onsite
+  offer
+  accepted
+  rejected
+  ghosted
+  withdrawn
+}
+
+enum WorkType {
+  remote
+  hybrid
+  onsite
+  unknown
+}
+
+enum InterviewFormat {
+  video
+  phone
+  onsite
+  take_home
+}
+
+enum CommType {
+  email
+  call
+  message
+  note
+}
+
+enum CommDirection {
+  sent
+  received
+  internal
+}
+
+enum AttachmentCategory {
+  resume
+  cover_letter
+  job_description
+  offer_letter
+  other
+}
