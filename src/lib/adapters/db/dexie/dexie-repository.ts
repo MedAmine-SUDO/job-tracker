@@ -1,5 +1,11 @@
 import { IApplicationRepository } from "@/lib/core/ports/repository";
-import { Application, CreateApplicationInput, UpdateApplicationInput } from "@/lib/core/domain/application";
+import {
+  Application,
+  Attachment,
+  CreateApplicationInput,
+  CreateAttachmentInput,
+  UpdateApplicationInput,
+} from "@/lib/core/domain/application";
 import { db } from "./dexie-client";
 
 /**
@@ -105,6 +111,44 @@ export class DexieApplicationRepository implements IApplicationRepository {
       .filter((a) => !a.isArchived && tags.every((t) => a.tags.includes(t)))
       .toArray();
     return Promise.all(apps.map((a) => this.enrich(a)));
+  }
+
+  async addAttachment(
+    applicationId: string,
+    userId: string,
+    input: CreateAttachmentInput
+  ): Promise<Attachment> {
+    const app = await db.applications.get(applicationId);
+    if (!app || app.userId !== userId) throw new Error("Application not found");
+
+    const key = (await db.attachments.add({
+      applicationId,
+      fileName: input.fileName,
+      fileUrl: input.fileUrl,
+      fileType: input.fileType,
+      fileSize: input.fileSize,
+      category: input.category,
+      uploadedAt: new Date(),
+    } as Attachment)) as number;
+    const created = await db.attachments.get(key);
+    return created!;
+  }
+
+  async deleteAttachment(
+    applicationId: string,
+    userId: string,
+    attachmentId: string
+  ): Promise<void> {
+    const app = await db.applications.get(applicationId);
+    if (!app || app.userId !== userId) throw new Error("Application not found");
+
+    const attachment = (
+      await db.attachments.where("applicationId").equals(applicationId).toArray()
+    ).find((a) => String(a.id) === attachmentId);
+    if (!attachment) {
+      throw new Error("Attachment not found");
+    }
+    await db.attachments.delete(attachment.id as any);
   }
 
   private async enrich(app: Application): Promise<Application> {

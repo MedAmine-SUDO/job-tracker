@@ -13,7 +13,8 @@ export async function GET() {
     const userId = await auth.requireAuth();
 
     const repo = await container.getRepository();
-    const useCases = new ApplicationUseCases(repo);
+    const storage = await container.getStorage();
+    const useCases = new ApplicationUseCases(repo, storage);
     const apps = await useCases.listApplications(userId);
 
     return NextResponse.json(apps);
@@ -36,7 +37,8 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const repo = await container.getRepository();
-    const useCases = new ApplicationUseCases(repo);
+    const storage = await container.getStorage();
+    const useCases = new ApplicationUseCases(repo, storage);
 
     const app = await useCases.createApplication(userId, {
       companyName: body.companyName,

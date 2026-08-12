@@ -105,6 +105,22 @@ export interface Attachment {
   uploadedAt: Date;
 }
 
+export const CATEGORY_LABELS: Record<AttachmentCategory, string> = {
+  resume: "Resume",
+  cover_letter: "Cover Letter",
+  job_description: "Job Description",
+  offer_letter: "Offer Letter",
+  other: "Other",
+};
+
+export interface CreateAttachmentInput {
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+  category: AttachmentCategory;
+}
+
 export interface Application {
   id: string;
   userId: string;

@@ -1,12 +1,18 @@
 import {
   Application,
+  Attachment,
   CreateApplicationInput,
+  CreateAttachmentInput,
   UpdateApplicationInput,
 } from "@/lib/core/domain/application";
 import { IApplicationRepository } from "@/lib/core/ports/repository";
+import { IStorageProvider } from "@/lib/core/ports/storage";
 
 export class ApplicationUseCases {
-  constructor(private repo: IApplicationRepository) {}
+  constructor(
+    private repo: IApplicationRepository,
+    private storage: IStorageProvider
+  ) {}
 
   async listApplications(userId: string): Promise<Application[]> {
     return this.repo.findAll(userId);
@@ -45,5 +51,29 @@ export class ApplicationUseCases {
 
   async listByTags(userId: string, tags: string[]): Promise<Application[]> {
     return this.repo.findByTags(userId, tags);
+  }
+
+  async uploadAttachment(
+    applicationId: string,
+    userId: string,
+    file: File,
+    category: CreateAttachmentInput["category"]
+  ): Promise<Attachment> {
+    const { url, size } = await this.storage.upload(file, file.name);
+    return this.repo.addAttachment(applicationId, userId, {
+      fileName: file.name,
+      fileUrl: url,
+      fileType: file.type,
+      fileSize: size,
+      category,
+    });
+  }
+
+  async deleteAttachment(
+    applicationId: string,
+    userId: string,
+    attachmentId: string
+  ): Promise<void> {
+    return this.repo.deleteAttachment(applicationId, userId, attachmentId);
   }
 }

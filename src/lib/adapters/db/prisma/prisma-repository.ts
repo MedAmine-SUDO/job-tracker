@@ -1,5 +1,11 @@
 import { IApplicationRepository } from "@/lib/core/ports/repository";
-import { Application, CreateApplicationInput, UpdateApplicationInput } from "@/lib/core/domain/application";
+import {
+  Application,
+  Attachment,
+  CreateApplicationInput,
+  CreateAttachmentInput,
+  UpdateApplicationInput,
+} from "@/lib/core/domain/application";
 import { prisma } from "./prisma-client";
 
 /**
@@ -136,6 +142,47 @@ export class PrismaApplicationRepository implements IApplicationRepository {
       orderBy: { createdAt: "desc" },
     });
     return apps.map(this.mapToDomain);
+  }
+
+  async addAttachment(
+    applicationId: string,
+    userId: string,
+    input: CreateAttachmentInput
+  ): Promise<Attachment> {
+    const app = await prisma.application.findFirst({
+      where: { id: applicationId, userId },
+    });
+    if (!app) throw new Error("Application not found");
+
+    const attachment = await prisma.attachment.create({
+      data: {
+        applicationId,
+        fileName: input.fileName,
+        fileUrl: input.fileUrl,
+        fileType: input.fileType,
+        fileSize: input.fileSize,
+        category: input.category as any,
+      },
+    });
+    return { ...attachment, uploadedAt: new Date(attachment.uploadedAt) };
+  }
+
+  async deleteAttachment(
+    applicationId: string,
+    userId: string,
+    attachmentId: string
+  ): Promise<void> {
+    const app = await prisma.application.findFirst({
+      where: { id: applicationId, userId },
+    });
+    if (!app) throw new Error("Application not found");
+
+    const existing = await prisma.attachment.findFirst({
+      where: { id: attachmentId, applicationId },
+    });
+    if (!existing) throw new Error("Attachment not found");
+
+    await prisma.attachment.delete({ where: { id: attachmentId } });
   }
 
   private mapToDomain(raw: any): Application {

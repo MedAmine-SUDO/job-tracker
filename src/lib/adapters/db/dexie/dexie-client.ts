@@ -14,7 +14,7 @@ class JobTrackerDB extends Dexie {
   contacts!: Table<Contact, string>;
   interviews!: Table<Interview, string>;
   reminders!: Table<Reminder, string>;
-  attachments!: Table<Attachment, string>;
+  attachments!: Table<Attachment, number>;
 
   constructor() {
     super("JobTrackerDB");

@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { Application, WORK_TYPE_LABELS } from "@/lib/core/domain/application";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { AttachmentsSection } from "@/components/applications/attachments-section";
 import { initials } from "@/lib/status-colors";
 
 async function fetchApplication(id: string): Promise<Application> {
@@ -154,6 +155,8 @@ export default function ApplicationDetailPage() {
         </section>
       )}
 
+      <AttachmentsSection applicationId={app.id} attachments={app.attachments} />
+
       {app.contacts && app.contacts.length > 0 && (
         <section className="rounded-xl border bg-card p-6">
           <h2 className="mb-4 flex items-center gap-2 font-semibold">
@@ -250,7 +253,8 @@ export default function ApplicationDetailPage() {
       {!app.jobDescriptionText &&
         !app.notes &&
         !app.contacts?.length &&
-        !app.interviews?.length && (
+        !app.interviews?.length &&
+        !app.attachments?.length && (
           <div className="rounded-xl border border-dashed p-12 text-center text-sm text-muted-foreground">
             Nothing added yet for this application.
           </div>

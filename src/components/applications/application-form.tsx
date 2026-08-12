@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ApplicationStatus, WorkType, STATUS_LABELS } from "@/lib/core/domain/application";
+import { ApplicationStatus, WorkType, AttachmentCategory, STATUS_LABELS, CATEGORY_LABELS } from "@/lib/core/domain/application";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Building2, Briefcase, MapPin, Link as LinkIcon, FileText, Tags, StickyNote, Share2 } from "lucide-react";
+import { Building2, Briefcase, MapPin, Link as LinkIcon, FileText, Tags, StickyNote, Share2, Paperclip, Loader2 } from "lucide-react";
 
 async function createApplication(data: any) {
   const res = await fetch("/api/applications", {
@@ -18,6 +18,18 @@ async function createApplication(data: any) {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to create");
+  return res.json();
+}
+
+async function uploadAttachment(applicationId: string, file: File, category: AttachmentCategory) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("category", category);
+  const res = await fetch(`/api/applications/${applicationId}/attachments`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Failed to upload attachment");
   return res.json();
 }
 
@@ -73,9 +85,17 @@ export function ApplicationForm() {
     tags: "",
     notes: "",
   });
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentCategory, setAttachmentCategory] = useState<AttachmentCategory>("resume");
 
   const mutation = useMutation({
-    mutationFn: createApplication,
+    mutationFn: async (data: any) => {
+      const app = await createApplication(data);
+      if (attachmentFile) {
+        await uploadAttachment(app.id, attachmentFile, attachmentCategory);
+      }
+      return app;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       router.push("/");
@@ -238,10 +258,39 @@ export function ApplicationForm() {
         </Field>
       </div>
 
+      <div className="space-y-4">
+        <SectionHeader icon={<Paperclip className="h-4 w-4" />} title="Attachments" />
+        <Field label="Upload File (optional)">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <select
+              value={attachmentCategory}
+              onChange={(e) => setAttachmentCategory(e.target.value as AttachmentCategory)}
+              className="h-10 shrink-0 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+            <input
+              type="file"
+              className="h-10 flex-1 cursor-pointer rounded-lg border border-input bg-background px-2 text-sm text-muted-foreground file:mr-3 file:h-full file:cursor-pointer file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:text-sm file:font-medium file:text-secondary-foreground hover:file:bg-secondary/80"
+              onChange={(e) => setAttachmentFile(e.target.files?.[0] ?? null)}
+              accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+            />
+          </div>
+          {attachmentFile && (
+            <p className="text-xs text-muted-foreground">
+              {attachmentFile.name} • {(attachmentFile.size / 1024).toFixed(1)} KB — will be
+              attached to this application.
+            </p>
+          )}
+        </Field>
+      </div>
+
       <Button type="submit" disabled={mutation.isPending} size="lg" className="w-full">
         {mutation.isPending ? (
           <span className="flex items-center gap-2">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+            <Loader2 className="h-4 w-4 animate-spin" />
             Saving...
           </span>
         ) : (

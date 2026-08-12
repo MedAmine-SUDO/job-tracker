@@ -1,6 +1,8 @@
 import {
   Application,
+  Attachment,
   CreateApplicationInput,
+  CreateAttachmentInput,
   UpdateApplicationInput,
 } from "@/lib/core/domain/application";
 
@@ -13,4 +15,14 @@ export interface IApplicationRepository {
   search(userId: string, query: string): Promise<Application[]>;
   findByStatus(userId: string, status: string): Promise<Application[]>;
   findByTags(userId: string, tags: string[]): Promise<Application[]>;
+  addAttachment(
+    applicationId: string,
+    userId: string,
+    input: CreateAttachmentInput
+  ): Promise<Attachment>;
+  deleteAttachment(
+    applicationId: string,
+    userId: string,
+    attachmentId: string
+  ): Promise<void>;
 }

@@ -11,7 +11,8 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     const userId = await auth.requireAuth();
 
     const repo = await container.getRepository();
-    const useCases = new ApplicationUseCases(repo);
+    const storage = await container.getStorage();
+    const useCases = new ApplicationUseCases(repo, storage);
 
     const app = await useCases.getApplication(params.id, userId);
     if (!app) {
@@ -37,7 +38,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     const body = await req.json();
     const repo = await container.getRepository();
-    const useCases = new ApplicationUseCases(repo);
+    const storage = await container.getStorage();
+    const useCases = new ApplicationUseCases(repo, storage);
 
     const app = await useCases.updateApplication(params.id, userId, body);
     return NextResponse.json(app);
@@ -62,7 +64,8 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     const userId = await auth.requireAuth();
 
     const repo = await container.getRepository();
-    const useCases = new ApplicationUseCases(repo);
+    const storage = await container.getStorage();
+    const useCases = new ApplicationUseCases(repo, storage);
 
     await useCases.deleteApplication(params.id, userId);
     return NextResponse.json({ success: true });
