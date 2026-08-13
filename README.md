@@ -13,6 +13,24 @@ A fast, tech-agnostic job application tracker built with **Clean Architecture** 
 - **Tech-agnostic storage** — files stored as base64 data URLs (local adapter) by default; swap to Supabase/S3 later via `STORAGE_ADAPTER`
 - **Tests** — Vitest unit tests + Playwright e2e (auth, create, upload)
 
+## Technology Choices & Why
+
+| Tech | Why we chose it |
+|------|-----------------|
+| **Next.js 14 (App Router)** | React meta-framework: file-based routing, RSC/CSR where it fits, and colocated API routes — one codebase for UI + API. Middleware enables edge-level route protection. |
+| **TypeScript** | Type-safe domain models and adapter contracts; catches cross-layer bugs at compile time. |
+| **Clean Architecture (Ports & Adapters)** | The core decision. Business logic (`src/lib/core`) knows nothing about Prisma, Clerk, or storage. Every integration is behind a port (`IApplicationRepository`, `IAuthProvider`, `IStorageProvider`) so you can swap providers by changing one env var — no UI or use-case changes. |
+| **Prisma ORM + Neon Postgres** | Type-safe database access with an ergonomic schema; Neon is a serverless Postgres that doesn't pause, so it's cheap and always-on. Postgres also means migrations, relations, and array fields (tags) out of the box. |
+| **Clerk** | Authentication is the one thing you shouldn't DIY. Clerk handles OAuth (Google/GitHub/LinkedIn/Microsoft), MFA, sessions, and password resets as a managed service — with a single integration that also provides route-level guards. |
+| **Dexie (IndexedDB)** | Optional zero-backend mode: same app works fully offline in the browser. Proves the port/adapters design — swap `DATABASE_ADAPTER=dexie` and nothing else changes. |
+| **Base64 local storage adapter** | Simplest possible file storage: files become data URLs in the DB, no buckets or CDN to manage at launch. The `IStorageProvider` port means we can move to Supabase/S3 later without touching upload code. |
+| **TanStack Query** | Server-state management: caching, refetching, and optimistic updates for the dashboard and detail pages with minimal boilerplate. |
+| **Tailwind CSS + Radix + shadcn-style components** | Rapid, consistent UI without a heavy component library; dark mode via `next-themes`. |
+| **Vitest + Playwright** | Fast unit tests for the core layer, plus real-browser e2e tests that exercise auth, form flows, and uploads against the running app. |
+| **Next 14.2.35 (not 15/16)** | The latest patched 14.x line fixes critical CVEs (e.g. CVE-2025-29927) while keeping the stable React 18 setup. A major upgrade is tracked in `SECURITY_TICKETS.md`. |
+
+> Note: `fuse.js`, `date-fns`, `zustand`, `react-hook-form`, and `zod` are declared in `package.json` from earlier scaffolding but are not yet used; nothing relies on them.
+
 ## Architecture
 
 ```
