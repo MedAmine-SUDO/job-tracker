@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Menu, Briefcase } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Menu, PanelLeft, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SignedIn, UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+
+const COLLAPSED_KEY = "sidebar-collapsed";
 
 export default function DashboardLayout({
   children,
@@ -13,10 +15,28 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(localStorage.getItem(COLLAPSED_KEY) === "1");
+  }, []);
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(COLLAPSED_KEY, next ? "1" : "0");
+      return next;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r bg-card/50 backdrop-blur-xl lg:flex">
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r bg-card/50 backdrop-blur-xl lg:flex",
+          collapsed && "lg:hidden"
+        )}
+      >
         <Sidebar />
       </aside>
 
@@ -35,14 +55,24 @@ export default function DashboardLayout({
         <Sidebar onNavigate={() => setDrawerOpen(false)} />
       </aside>
 
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-xl lg:hidden">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-xl">
         <Button
           variant="ghost"
           size="icon"
+          className="lg:hidden"
           onClick={() => setDrawerOpen(true)}
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="hidden lg:inline-flex"
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <PanelLeft className="h-5 w-5" />
         </Button>
         <div className="flex items-center gap-2">
           <div className="bg-brand-gradient flex h-7 w-7 items-center justify-center rounded-lg text-white">
@@ -56,7 +86,7 @@ export default function DashboardLayout({
         </SignedIn>
       </header>
 
-      <div className="lg:pl-64">
+      <div className={cn("transition-[padding]", collapsed ? "lg:pl-0" : "lg:pl-64")}>
         <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
           {children}
         </main>
