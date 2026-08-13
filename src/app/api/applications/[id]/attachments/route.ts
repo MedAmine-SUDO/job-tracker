@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 import { container } from "@/lib/infrastructure/container";
 import { ApplicationUseCases } from "@/lib/core/usecases/application-usecases";
 import { AttachmentCategory } from "@/lib/core/domain/application";
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+import {
+  ALLOWED_ATTACHMENT_MIMES,
+  MAX_ATTACHMENT_SIZE,
+} from "@/lib/upload";
 
 /**
  * POST /api/applications/:id/attachments
@@ -24,6 +26,20 @@ export async function POST(
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
+    if (!ALLOWED_ATTACHMENT_MIMES.has(file.type)) {
+      return NextResponse.json(
+        {
+          error: `File type "${file.type || "unknown"}" is not allowed. Use PDF, DOC/DOCX, TXT, MD, or an image.`,
+        },
+        { status: 400 }
+      );
+    }
+    if (file.size > MAX_ATTACHMENT_SIZE) {
+      return NextResponse.json(
+        { error: "File must be 10MB or smaller" },
+        { status: 400 }
+      );
+    }
     const validCategories: AttachmentCategory[] = [
       "resume",
       "cover_letter",
@@ -34,13 +50,6 @@ export async function POST(
     const cat = validCategories.includes(category as AttachmentCategory)
       ? (category as AttachmentCategory)
       : "other";
-
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: "File must be 10MB or smaller" },
-        { status: 400 }
-      );
-    }
 
     const repo = await container.getRepository();
     const storage = await container.getStorage();

@@ -33,8 +33,9 @@ export default async function middleware(request: NextRequest) {
       });
       return handler(request, {} as any);
     } catch {
-      // Clerk not configured, fall through to local mode
-      return NextResponse.next();
+      // Clerk misconfigured or unavailable: FAIL CLOSED.
+      // Never allow unauthenticated access to a protected app.
+      return NextResponse.redirect(new URL("/sign-in", request.url));
     }
   }
 

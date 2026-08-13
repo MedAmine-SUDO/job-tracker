@@ -8,6 +8,7 @@ import {
   CATEGORY_LABELS,
 } from "@/lib/core/domain/application";
 import { Button } from "@/components/ui/button";
+import { ATTACHMENT_ACCEPT } from "@/lib/upload";
 import {
   Upload,
   FileText,
@@ -135,7 +136,7 @@ export function AttachmentsSection({
             type="file"
             className="h-10 flex-1 cursor-pointer rounded-lg border border-input bg-background px-2 text-sm text-muted-foreground file:mr-3 file:h-full file:cursor-pointer file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:text-sm file:font-medium file:text-secondary-foreground hover:file:bg-secondary/80"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+            accept={ATTACHMENT_ACCEPT}
           />
 
           <Button onClick={handleUpload} disabled={!file || uploading}>

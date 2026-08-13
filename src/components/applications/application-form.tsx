@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ApplicationStatus, WorkType, AttachmentCategory, STATUS_LABELS, CATEGORY_LABELS } from "@/lib/core/domain/application";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Building2, Briefcase, MapPin, Link as LinkIcon, FileText, Tags, StickyNote, Share2, Paperclip, Loader2, CheckCircle2 } from "lucide-react";
+import { ATTACHMENT_ACCEPT } from "@/lib/upload";
 
 async function createApplication(data: any) {
   const res = await fetch("/api/applications", {
@@ -293,7 +294,7 @@ export function ApplicationForm() {
               type="file"
               className="h-10 flex-1 cursor-pointer rounded-lg border border-input bg-background px-2 text-sm text-muted-foreground file:mr-3 file:h-full file:cursor-pointer file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:text-sm file:font-medium file:text-secondary-foreground hover:file:bg-secondary/80"
               onChange={handleAttachmentFileChange}
-              accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+              accept={ATTACHMENT_ACCEPT}
             />
           </div>
           {selectedAttachment ? (
