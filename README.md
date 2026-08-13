@@ -1,6 +1,17 @@
 # Job Tracker
 
-A blazing-fast, tech-agnostic job application tracker built with **Clean Architecture** (Ports & Adapters). Swap any technology — database, auth, storage — without touching your business logic or UI.
+A fast, tech-agnostic job application tracker built with **Clean Architecture** (Ports & Adapters). Swap any technology — database, auth, storage — without touching your business logic or UI.
+
+## Features
+
+- **Authentication** — Clerk-powered sign-in/sign-up with route protection (middleware, fail-closed)
+- **Application CRUD** — full pipeline (wishlist → applied → interviews → offer → accepted/rejected), tags, search & status filters
+- **Views** — list view and Kanban board, dark/light mode
+- **Attachments** — upload your resume, cover letter, or job description (PDF/DOC/TXT/images) when creating an application or from the detail page; per-category, with 10MB limit and server-side MIME whitelist
+- **Detail page** — job description, notes, contacts, interviews, and attachment list
+- **Dashboard stats** — total, active, in-interviews, offers
+- **Tech-agnostic storage** — files stored as base64 data URLs (local adapter) by default; swap to Supabase/S3 later via `STORAGE_ADAPTER`
+- **Tests** — Vitest unit tests + Playwright e2e (auth, create, upload)
 
 ## Architecture
 
@@ -53,7 +64,7 @@ A blazing-fast, tech-agnostic job application tracker built with **Clean Archite
 No database, no auth service, no credit card. Everything stays in your browser.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/job-tracker.git
+git clone https://github.com/MedAmine-SUDO/job-tracker.git
 cd job-tracker
 npm install
 ```
@@ -93,44 +104,76 @@ STORAGE_ADAPTER=local
 ```
 
 ```bash
-npx prisma migrate dev --name init
 npx prisma generate
+npx prisma db push
 npm run dev
 ```
+
+## Testing
+
+### Unit tests (Vitest)
+
+Covers the core layer: application use cases (CRUD, ownership isolation, attachment upload/delete wiring) and the local storage adapter (MIME detection, base64 encoding).
+
+```bash
+npm run test        # run once
+npm run test:watch  # watch mode
+npm run test:coverage
+```
+
+### E2E tests (Playwright + Clerk)
+
+Smoke test of the real stack: sign-in via Clerk testing tokens, create an application, upload a resume, verify the detail page. Requires Clerk **Email + Password** auth enabled on your dev instance.
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+Prerequisites (in `.env.local`, keys already in `.env.example`):
+
+```bash
+# E2E user (the +clerk_test suffix avoids real emails; verification codes are always 424242)
+E2E_CLERK_USER_EMAIL=jobtracker-e2e+clerk_test@example.com
+E2E_CLERK_USER_PASSWORD=change-me-strong-password
+```
+
+## Security
+
+Pre-launch hardening applied:
+
+- **Next.js 14.2.35** — fixes CVE-2025-29927 (critical middleware authorization bypass)
+- **Fail-closed middleware** — if Clerk errors, requests are redirected to sign-in instead of passing through
+- **Server-side upload MIME whitelist** — only PDF/DOC/DOCX/TXT/MD/images accepted (shared constants in `src/lib/upload.ts`)
+- **Ownership-scoped data access** — every repository query filters by `userId`
+
+Medium-priority follow-ups are tracked as tickets in [`SECURITY_TICKETS.md`](./SECURITY_TICKETS.md) (security headers, rate limiting, URL scheme sanitization, SDK upgrades, credential rotation).
 
 ## Project Structure
 
 ```
 job-tracker/
 ├── src/
-│   ├── app/                          # Next.js App Router
-│   │   ├── (auth)/                   # Auth pages (sign-in, sign-up)
-│   │   ├── (dashboard)/              # Main app pages
-│   │   │   ├── page.tsx              # Dashboard (list/board views)
-│   │   │   ├── applications/
-│   │   │   │   ├── new/page.tsx      # New application form
-│   │   │   │   └── [id]/page.tsx     # Application detail
-│   │   └── api/applications/         # REST API (uses container)
+│   ├── app/
+│   │   ├── (auth)/                   # Sign-in / sign-up pages
+│   │   ├── (dashboard)/              # Main app pages (dashboard, new, detail)
+│   │   └── api/applications/         # REST API (uses DI container)
+│   │       └── [id]/attachments/     # Upload + delete attachments
 │   ├── components/
-│   │   ├── ui/                       # shadcn/ui components
-│   │   ├── applications/             # Application-specific components
-│   │   └── layout/                   # Layout components
+│   │   ├── ui/                       # shadcn/ui-style primitives
+│   │   ├── applications/             # Form, list, board, attachments section
+│   │   └── layout/                   # Sidebar, search, filters, providers
 │   ├── lib/
-│   │   ├── core/                     # Business logic (framework-agnostic)
-│   │   │   ├── domain/               # Domain models & types
-│   │   │   ├── ports/                # Interfaces (contracts)
-│   │   │   └── usecases/             # Business logic
-│   │   ├── adapters/                 # Concrete implementations
-│   │   │   ├── db/prisma/            # PostgreSQL via Prisma
-│   │   │   ├── db/dexie/             # IndexedDB via Dexie
-│   │   │   ├── auth/clerk/           # Clerk auth
-│   │   │   ├── auth/local/           # Local auth (dev mode)
-│   │   │   └── storage/local/        # Local file storage
-│   │   └── infrastructure/           # DI container & config
-│   └── types/                        # Shared types
-├── prisma/
-│   └── schema.prisma                 # Database schema
-└── public/                           # Static assets
+│   │   ├── core/                     # Domain, ports, use cases (framework-agnostic)
+│   │   ├── adapters/                 # Prisma, Dexie, Clerk, local auth, local storage
+│   │   ├── infrastructure/           # DI container
+│   │   └── upload.ts                 # Shared upload constraints (server + client)
+│   └── middleware.ts                 # Route protection (fail-closed)
+├── e2e/                              # Playwright tests + fixtures
+├── prisma/schema.prisma              # Database schema
+├── vitest.config.ts                  # Unit test config
+├── playwright.config.ts              # E2E test config
+└── SECURITY_TICKETS.md               # Open security follow-ups
 ```
 
 ## Adding a New Adapter
@@ -150,6 +193,8 @@ export class SupabaseApplicationRepository implements IApplicationRepository {
   async search(userId, query) { /* ... */ }
   async findByStatus(userId, status) { /* ... */ }
   async findByTags(userId, tags) { /* ... */ }
+  async addAttachment(applicationId, userId, input) { /* ... */ }
+  async deleteAttachment(applicationId, userId, attachmentId) { /* ... */ }
 }
 ```
 
@@ -170,8 +215,10 @@ Set `DATABASE_ADAPTER=supabase` in `.env.local`. Done. Zero UI changes.
 1. Push to GitHub
 2. Import in Vercel
 3. Add environment variables from `.env.local`
-4. If using Prisma: add `npx prisma generate` to build command
+4. Add `npx prisma generate` to the build command
 5. Deploy
+
+> Note: Vercel caps serverless function request bodies at ~4.5MB. The upload limit is 10MB, so large uploads will fail there — see `SECURITY_TICKETS.md` TICKET-07.
 
 ### Self-Hosted
 ```bash
@@ -182,18 +229,21 @@ npm start
 ## Roadmap
 
 - [x] Clean Architecture (Ports & Adapters)
-- [x] Prisma adapter (PostgreSQL/SQLite)
+- [x] Prisma adapter (PostgreSQL)
 - [x] Dexie adapter (IndexedDB, offline-first)
-- [x] Clerk auth adapter
-- [x] Local auth adapter (zero external deps)
+- [x] Clerk auth adapter + route protection
 - [x] Application CRUD + status pipeline
-- [x] Search & filter
+- [x] Search, tags & filters
 - [x] List view + Kanban board
 - [x] Dark mode
-- [ ] Contact management
-- [ ] Interview tracking
+- [x] Dashboard stats
+- [x] Resume / cover letter / job description upload
+- [x] Unit + e2e test suite
+- [x] Security hardening + ticket backlog
+- [ ] Contact management (CRUD)
+- [ ] Interview tracking (CRUD)
 - [ ] Reminders & notifications
-- [ ] Resume upload & versioning
+- [ ] Resume versioning
 - [ ] Analytics dashboard
 - [ ] PWA / Offline mode
 - [ ] Android app (TWA)
