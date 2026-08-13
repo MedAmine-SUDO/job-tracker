@@ -45,12 +45,12 @@ function daysSince(date: string | Date): number {
 
 export default function ApplicationDetailPage() {
   const { id } = useParams();
-  const { data: app, isLoading } = useQuery({
+  const { data: app, isPending } = useQuery({
     queryKey: ["application", id],
     queryFn: () => fetchApplication(id as string),
   });
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />

@@ -67,7 +67,7 @@ function StatCard({ label, value, icon, gradient }: StatCardProps) {
 
 export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
-  const { data: applications = [], isLoading } = useQuery({
+  const { data: applications = [], isPending } = useQuery({
     queryKey: ["applications"],
     queryFn: fetchApplications,
   });
@@ -151,7 +151,7 @@ export default function DashboardPage() {
         <StatusFilter />
       </div>
 
-      {isLoading ? (
+      {isPending ? (
         <div className="flex items-center justify-center py-24">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
         </div>
