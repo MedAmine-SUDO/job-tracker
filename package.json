@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
@@ -40,17 +44,23 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@clerk/testing": "^2.2.22",
+    "@playwright/test": "^1.62.1",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@vitest/coverage-v8": "^4.1.10",
     "autoprefixer": "^10.4.19",
+    "dotenv": "^17.4.2",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.35",
+    "happy-dom": "^20.11.2",
     "postcss": "^8.4.39",
     "prisma": "^5.16.0",
     "tailwindcss": "^3.4.4",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.16.2",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "vitest": "^4.1.10"
   }
 }

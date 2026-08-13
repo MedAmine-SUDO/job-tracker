@@ -23,6 +23,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Testing
+coverage
+test-results
+playwright-report
+playwright
+
 # Local env files
 .env*.local
 .env
