@@ -55,7 +55,12 @@ export default function DashboardLayout({
         <Sidebar onNavigate={() => setDrawerOpen(false)} />
       </aside>
 
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-xl">
+      <header
+        className={cn(
+          "sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-xl transition-[padding]",
+          collapsed ? "lg:pl-0" : "lg:pl-64"
+        )}
+      >
         <Button
           variant="ghost"
           size="icon"
