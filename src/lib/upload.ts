@@ -5,6 +5,9 @@
 
 export const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
+export const MAX_ATTACHMENT_SIZE_MB = MAX_ATTACHMENT_SIZE / (1024 * 1024);
+export const MAX_ATTACHMENT_SIZE_LABEL = `${MAX_ATTACHMENT_SIZE_MB} MB`;
+
 export const ALLOWED_ATTACHMENT_MIMES = new Set([
   "application/pdf",
   "text/plain",

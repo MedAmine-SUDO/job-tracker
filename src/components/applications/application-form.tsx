@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ApplicationStatus, WorkType, AttachmentCategory, STATUS_LABELS, CATEGORY_LABELS } from "@/lib/core/domain/application";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Building2, Briefcase, MapPin, Link as LinkIcon, FileText, Tags, StickyNote, Share2, Paperclip, Loader2, CheckCircle2 } from "lucide-react";
-import { ATTACHMENT_ACCEPT } from "@/lib/upload";
+import { ATTACHMENT_ACCEPT, MAX_ATTACHMENT_SIZE_LABEL } from "@/lib/upload";
 
 async function createApplication(data: any) {
   const res = await fetch("/api/applications", {
@@ -305,7 +305,8 @@ export function ApplicationForm() {
             </p>
           ) : (
             <p className="mt-2 text-xs text-muted-foreground">
-              No file selected for {CATEGORY_LABELS[attachmentCategory].toLowerCase()}.
+              No file selected for {CATEGORY_LABELS[attachmentCategory].toLowerCase()}.{" "}
+              Max {MAX_ATTACHMENT_SIZE_LABEL} per file.
             </p>
           )}
         </Field>

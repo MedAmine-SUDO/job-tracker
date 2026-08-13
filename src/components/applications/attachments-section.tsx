@@ -8,7 +8,7 @@ import {
   CATEGORY_LABELS,
 } from "@/lib/core/domain/application";
 import { Button } from "@/components/ui/button";
-import { ATTACHMENT_ACCEPT } from "@/lib/upload";
+import { ATTACHMENT_ACCEPT, MAX_ATTACHMENT_SIZE_LABEL } from "@/lib/upload";
 import {
   Upload,
   FileText,
@@ -148,6 +148,9 @@ export function AttachmentsSection({
             Upload
           </Button>
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Max {MAX_ATTACHMENT_SIZE_LABEL} per file.
+        </p>
         {file ? (
           <p className="mt-2 text-xs text-muted-foreground">
             {file.name} • {formatFileSize(file.size)}
