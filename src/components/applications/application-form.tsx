@@ -43,7 +43,7 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center gap-2 border-b pb-2">
-      <span className="text-indigo-500">{icon}</span>
+      <span className="text-amber-500">{icon}</span>
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {title}
       </h2>

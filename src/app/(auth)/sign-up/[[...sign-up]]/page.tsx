@@ -15,7 +15,7 @@ export default function SignUpPage() {
 
       <div className="relative z-10 w-full max-w-md">
         <div className="mb-6 flex flex-col items-center gap-3">
-          <div className="bg-brand-gradient flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg shadow-indigo-500/40">
+          <div className="bg-brand-gradient flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg shadow-orange-500/40">
             <Briefcase className="h-7 w-7" />
           </div>
           <div className="text-center">
@@ -26,7 +26,7 @@ export default function SignUpPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-card/90 p-6 shadow-xl shadow-indigo-500/10 backdrop-blur-xl sm:p-8">
+        <div className="rounded-2xl border bg-card/90 p-6 shadow-xl shadow-orange-500/10 backdrop-blur-xl sm:p-8">
           <SignUp
             appearance={{
               elements: {

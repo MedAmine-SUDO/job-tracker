@@ -80,7 +80,7 @@ export default function ApplicationDetailPage() {
         <div className="bg-hero-gradient pointer-events-none absolute inset-0 opacity-60" />
         <div className="relative">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-            <div className="bg-brand-gradient flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-lg shadow-indigo-500/30">
+            <div className="bg-brand-gradient flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-lg shadow-orange-500/30">
               {initials(app.companyName)}
             </div>
 
@@ -134,7 +134,7 @@ export default function ApplicationDetailPage() {
       {app.jobDescriptionText && (
         <section className="rounded-xl border bg-card p-6">
           <h2 className="mb-3 flex items-center gap-2 font-semibold">
-            <FileText className="h-4 w-4 text-indigo-500" />
+            <FileText className="h-4 w-4 text-amber-500" />
             Job Description
           </h2>
           <div className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
@@ -172,7 +172,7 @@ export default function ApplicationDetailPage() {
                 key={contact.id}
                 className="flex items-center gap-3 rounded-lg border bg-muted/30 px-3.5 py-3 text-sm"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-xs font-bold text-white">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-xs font-bold text-white">
                   {initials(contact.name)}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -209,7 +209,7 @@ export default function ApplicationDetailPage() {
       {app.interviews && app.interviews.length > 0 && (
         <section className="rounded-xl border bg-card p-6">
           <h2 className="mb-4 flex items-center gap-2 font-semibold">
-            <Mic className="h-4 w-4 text-fuchsia-500" />
+            <Mic className="h-4 w-4 text-rose-500" />
             Interviews
             <span className="text-xs font-normal text-muted-foreground">
               {app.interviews.length}
@@ -240,7 +240,7 @@ export default function ApplicationDetailPage() {
                     ))}
                   </div>
                 ) : (
-                  <span className="inline-flex items-center rounded-full bg-fuchsia-100 px-2.5 py-0.5 text-xs font-semibold text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300">
+                  <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-950 dark:text-rose-300">
                     {interview.completed ? "Completed" : "Upcoming"}
                   </span>
                 )}

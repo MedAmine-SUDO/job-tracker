@@ -15,7 +15,7 @@ export default function NewApplicationPage() {
           </Button>
         </Link>
         <div className="flex items-center gap-2.5">
-          <div className="bg-brand-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-md shadow-indigo-500/30">
+          <div className="bg-brand-gradient flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-md shadow-orange-500/30">
             <PlusCircle className="h-5 w-5" />
           </div>
           <div>

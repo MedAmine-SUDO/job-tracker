@@ -45,7 +45,7 @@ export default function ConnectionsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight sm:text-2xl">
-            <Users className="h-5 w-5 text-indigo-500" />
+            <Users className="h-5 w-5 text-amber-500" />
             LinkedIn Connections
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -73,7 +73,7 @@ export default function ConnectionsPage() {
         <div className="relative overflow-hidden rounded-2xl border border-dashed bg-card/50 py-24 text-center">
           <div className="bg-hero-gradient pointer-events-none absolute inset-0" />
           <div className="relative mx-auto flex max-w-sm flex-col items-center px-6">
-            <div className="bg-brand-gradient mb-6 flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg shadow-indigo-500/30">
+            <div className="bg-brand-gradient mb-6 flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg shadow-orange-500/30">
               <Users className="h-8 w-8" />
             </div>
             <h3 className="text-lg font-bold">No connections yet</h3>

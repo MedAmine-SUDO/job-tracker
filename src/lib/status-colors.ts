@@ -27,10 +27,10 @@ export const STATUS_STYLES: Record<ApplicationStatus, StatusStyle> = {
     soft: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300",
   },
   technical: {
-    badge: "border-violet-200 bg-violet-100 text-violet-700 dark:border-violet-900 dark:bg-violet-950 dark:text-violet-300",
-    dot: "bg-violet-500",
-    bar: "from-violet-400 to-purple-500",
-    soft: "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300",
+    badge: "border-teal-200 bg-teal-100 text-teal-700 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-300",
+    dot: "bg-teal-500",
+    bar: "from-teal-400 to-cyan-500",
+    soft: "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300",
   },
   onsite: {
     badge: "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300",
@@ -71,14 +71,14 @@ export const STATUS_STYLES: Record<ApplicationStatus, StatusStyle> = {
 };
 
 export const AVATAR_GRADIENTS = [
-  "from-indigo-500 to-violet-500",
-  "from-sky-500 to-blue-600",
-  "from-fuchsia-500 to-pink-600",
-  "from-emerald-500 to-teal-600",
   "from-amber-500 to-orange-600",
+  "from-orange-500 to-rose-500",
   "from-rose-500 to-red-600",
-  "from-cyan-500 to-sky-600",
-  "from-purple-500 to-indigo-600",
+  "from-emerald-500 to-teal-600",
+  "from-teal-500 to-cyan-600",
+  "from-sky-500 to-blue-600",
+  "from-orange-600 to-red-600",
+  "from-amber-400 to-yellow-600",
 ];
 
 export function avatarGradient(name: string): string {
