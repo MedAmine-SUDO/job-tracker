@@ -9,7 +9,7 @@ A fast, tech-agnostic job application tracker built with **Clean Architecture** 
 - **Views** — list view and Kanban board, dark/light mode
 - **Attachments** — upload your resume, cover letter, or job description (PDF/DOC/TXT/images) when creating an application or from the detail page; per-category, with 10MB limit and server-side MIME whitelist
 - **Detail page** — job description, notes, contacts, interviews, and attachment list
-- **Dashboard stats** — total, active, in-interviews, offers
+- **Dashboard stats** — total, active, in-interviews, offers, plus a "needs follow-up" count and a compact follow-up panel so you never forget who to message back
 - **LinkedIn Connections** — save people you connected with on LinkedIn (name, profile URL, connection purpose incl. custom) and track outreach status so you never forget who to message
 - **Data export** — download all your data (applications incl. archived, contacts, interviews, communications, reminders, attachments, connections) as JSON or CSV from the sidebar
 - **Tech-agnostic storage** — files stored as base64 data URLs (local adapter) by default; swap to Supabase/S3 later via `STORAGE_ADAPTER`

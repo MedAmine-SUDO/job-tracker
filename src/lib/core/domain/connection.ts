@@ -26,6 +26,15 @@ export const CONNECTION_STATUS_LABELS: Record<ConnectionStatus, string> = {
   not_interested: "Not Interested",
 };
 
+export const FOLLOW_UP_STATUSES: ConnectionStatus[] = [
+  "to_reach_out",
+  "messaged",
+];
+
+export function isFollowUpPending(status: ConnectionStatus): boolean {
+  return FOLLOW_UP_STATUSES.includes(status);
+}
+
 export interface Connection {
   id: string;
   userId: string;

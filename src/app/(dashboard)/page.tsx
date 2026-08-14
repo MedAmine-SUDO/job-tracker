@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ApplicationList } from "@/components/applications/application-list";
 import { ApplicationBoard } from "@/components/applications/application-board";
+import { FollowUpPanel } from "@/components/connections/follow-up-panel";
 import { SearchBar } from "@/components/layout/search-bar";
 import { StatusFilter } from "@/components/layout/status-filter";
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,20 @@ import {
   Radio,
   Trophy,
   Sparkles,
+  Handshake,
 } from "lucide-react";
 import Link from "next/link";
 import { Application, ApplicationStatus } from "@/lib/core/domain/application";
+import { Connection, isFollowUpPending } from "@/lib/core/domain/connection";
 
 async function fetchApplications(): Promise<Application[]> {
   const res = await fetch("/api/applications");
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+}
+
+async function fetchConnections(): Promise<Connection[]> {
+  const res = await fetch("/api/connections");
   if (!res.ok) throw new Error("Failed to fetch");
   return res.json();
 }
@@ -72,11 +81,17 @@ export default function DashboardPage() {
     queryFn: fetchApplications,
   });
 
+  const { data: connections = [] } = useQuery({
+    queryKey: ["connections"],
+    queryFn: fetchConnections,
+  });
+
   const stats = {
     total: applications.length,
     active: applications.filter((a) => ACTIVE_STATUSES.includes(a.status)).length,
     interviews: applications.filter((a) => INTERVIEW_STATUSES.includes(a.status)).length,
     offers: applications.filter((a) => OFFER_STATUSES.includes(a.status)).length,
+    followUps: connections.filter((c) => isFollowUpPending(c.status)).length,
   };
 
   return (
@@ -119,7 +134,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <StatCard
           label="Total Applications"
           value={stats.total}
@@ -144,7 +159,15 @@ export default function DashboardPage() {
           icon={<Trophy className="h-5 w-5" />}
           gradient="from-emerald-500 to-teal-600"
         />
+        <StatCard
+          label="Needs Follow-up"
+          value={stats.followUps}
+          icon={<Handshake className="h-5 w-5" />}
+          gradient="from-violet-500 to-purple-600"
+        />
       </div>
+
+      <FollowUpPanel connections={connections} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <SearchBar />
