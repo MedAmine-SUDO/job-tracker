@@ -2,6 +2,7 @@ import { IApplicationRepository } from "@/lib/core/ports/repository";
 import { IAuthProvider } from "@/lib/core/ports/auth";
 import { IStorageProvider } from "@/lib/core/ports/storage";
 import { IConnectionRepository } from "@/lib/core/ports/connection-repository";
+import { IExportRepository } from "@/lib/core/ports/export-repository";
 
 /**
  * Dependency Injection Container
@@ -19,6 +20,7 @@ class Container {
   private _connectionRepo: IConnectionRepository | null = null;
   private _auth: IAuthProvider | null = null;
   private _storage: IStorageProvider | null = null;
+  private _exportRepo: IExportRepository | null = null;
 
   async getRepository(): Promise<IApplicationRepository> {
     if (this._repo) return this._repo;
@@ -111,6 +113,31 @@ class Container {
     }
 
     return this._storage;
+  }
+
+  async getExportRepository(): Promise<IExportRepository> {
+    if (this._exportRepo) return this._exportRepo;
+
+    const adapter = process.env.DATABASE_ADAPTER || "prisma";
+    switch (adapter) {
+      case "dexie": {
+        const { DexieExportRepository } = await import(
+          "@/lib/adapters/db/dexie/dexie-export-repository"
+        );
+        this._exportRepo = new DexieExportRepository();
+        break;
+      }
+      case "prisma":
+      default: {
+        const { PrismaExportRepository } = await import(
+          "@/lib/adapters/db/prisma/prisma-export-repository"
+        );
+        this._exportRepo = new PrismaExportRepository();
+        break;
+      }
+    }
+
+    return this._exportRepo;
   }
 }
 

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Briefcase, LayoutDashboard, PlusCircle, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { ExportMenu } from "@/components/layout/export-menu";
 import { SignedIn, UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +69,11 @@ export function Sidebar({ onNavigate }: SidebarProps) {
             </Link>
           );
         })}
+
+        <p className="px-3 pb-2 pt-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Data
+        </p>
+        <ExportMenu />
       </nav>
 
       <div className="flex items-center justify-between gap-2 border-t px-4 py-4">
