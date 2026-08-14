@@ -106,6 +106,22 @@ model Attachment {
   application   Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }
 
+model Connection {
+  id            String           @id @default(uuid())
+  userId        String
+  name          String
+  linkedinUrl   String
+  purpose       ConnectionPurpose
+  customPurpose String?
+  status        ConnectionStatus @default(to_reach_out)
+  notes         String?          @db.Text
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
 enum ApplicationStatus {
   wishlist
   applied
@@ -152,4 +168,19 @@ enum AttachmentCategory {
   job_description
   offer_letter
   other
+}
+
+enum ConnectionPurpose {
+  discuss_opportunity
+  look_for_opportunity
+  apply_for_opportunity
+  referral
+  other
+}
+
+enum ConnectionStatus {
+  to_reach_out
+  messaged
+  replied
+  not_interested
 }

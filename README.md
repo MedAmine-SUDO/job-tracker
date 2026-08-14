@@ -10,6 +10,7 @@ A fast, tech-agnostic job application tracker built with **Clean Architecture** 
 - **Attachments** — upload your resume, cover letter, or job description (PDF/DOC/TXT/images) when creating an application or from the detail page; per-category, with 10MB limit and server-side MIME whitelist
 - **Detail page** — job description, notes, contacts, interviews, and attachment list
 - **Dashboard stats** — total, active, in-interviews, offers
+- **LinkedIn Connections** — save people you connected with on LinkedIn (name, profile URL, connection purpose incl. custom) and track outreach status so you never forget who to message
 - **Tech-agnostic storage** — files stored as base64 data URLs (local adapter) by default; swap to Supabase/S3 later via `STORAGE_ADAPTER`
 - **Tests** — Vitest unit tests + Playwright e2e (auth, create, upload)
 
@@ -255,6 +256,7 @@ npm start
 - [x] List view + Kanban board
 - [x] Dark mode
 - [x] Dashboard stats
+- [x] LinkedIn Connections (people to follow up with + outreach status)
 - [x] Resume / cover letter / job description upload
 - [x] Unit + e2e test suite
 - [x] Security hardening + ticket backlog

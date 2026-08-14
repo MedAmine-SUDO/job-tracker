@@ -1,5 +1,6 @@
 import Dexie, { Table } from "dexie";
 import { Application, Contact, Interview, Reminder, Attachment } from "@/lib/core/domain/application";
+import { Connection } from "@/lib/core/domain/connection";
 
 /**
  * Dexie Database Client
@@ -15,6 +16,7 @@ class JobTrackerDB extends Dexie {
   interviews!: Table<Interview, string>;
   reminders!: Table<Reminder, string>;
   attachments!: Table<Attachment, number>;
+  connections!: Table<Connection, string>;
 
   constructor() {
     super("JobTrackerDB");
@@ -24,6 +26,9 @@ class JobTrackerDB extends Dexie {
       interviews: "++id, applicationId, scheduledDate, completed",
       reminders: "++id, userId, applicationId, dueDate, isCompleted",
       attachments: "++id, applicationId, category, uploadedAt",
+    });
+    this.version(2).stores({
+      connections: "++id, userId, name, status, purpose, createdAt",
     });
   }
 }

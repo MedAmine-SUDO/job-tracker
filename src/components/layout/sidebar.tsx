@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, LayoutDashboard, PlusCircle, X } from "lucide-react";
+import { Briefcase, LayoutDashboard, PlusCircle, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { SignedIn, UserButton } from "@clerk/nextjs";
@@ -14,6 +14,7 @@ interface SidebarProps {
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/connections", label: "Connections", icon: Users },
   { href: "/applications/new", label: "New Application", icon: PlusCircle },
 ];
 
